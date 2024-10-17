@@ -4,7 +4,7 @@ Você foi contratado por uma empresa de análise de risco ambiental para criar u
 
 **API Sugerida:**
 
-* USGS Earthquake Hazards Program API (https://earthquake.usgs.gov/fdsnws/event/1/)
+* USGS Earthquake Hazards Program API (https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson)
 
     - A API oferece dados sobre terremotos em tempo real.
 
