@@ -5,6 +5,7 @@ from datetime import datetime
 import os
 
 def carregar_dados(caminho=None, api_url=None, api_key=None):
+    # TODO: testar leitura de arquivos CSV e PARQUET
     if caminho:
         if caminho.endswith('.csv'):
             df = pd.read_csv(caminho)
@@ -13,25 +14,34 @@ def carregar_dados(caminho=None, api_url=None, api_key=None):
         else:
             raise ValueError("Formato de arquivo não suportado. Use CSV ou Parquet.")
     # Carregar de API
-    elif api_url:
-        headers = {'Authorization': f'Bearer {api_key}'} if api_key else {}
-        response = requests.get(api_url, headers=headers)
-        data = response.json()
-        if isinstance(data, dict):
-            for chave in data:
-                print(f'{chave}')
-        elif isinstance(data, list):
-            for index, item in enumerate(data):
-                print(item + f'{index}.')
+    elif api_url and api_key:
+        url_completa = f"{api_url}?key={api_key}"
+        response = requests.get(url_completa)
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                if isinstance(data, dict):
+                    print(f'Escolha a chave onde estão os dados:')
+                    for chave in data:
+                        print(chave)
+                elif isinstance(data, list):
+                    for index, item in enumerate(data):
+                        print(item + f'{index}.')
 
-        chave = input("Digite o nome da chave dos dados da API: ")
-        df = pd.DataFrame(data[chave])
+                chave = input("Digite o nome da chave dos dados da API: ")
+                df = pd.DataFrame(data[chave])
+            except requests.exceptions.JSONDecodeError:
+                print("Resposta recebida: ",response.text)
+        else:
+            print(f"Resposta {response.status_codes} da API. Mensgaem: {response.text}")
+            
     else:
         raise ValueError("Forneça um caminho de arquivo ou uma URL de API.")
     
     return df
 
 def expandir_colunas_dict(df):
+    # caso as colunas sejam dicionários, faz a normalização para expandir
     for coluna in df.columns:
         if isinstance(df[coluna].iloc[0], dict):
             print(f"Expandindo coluna '{coluna}' que contém dicionário...")
@@ -76,12 +86,18 @@ def padronizar_colunas(df):
 
 def tratar_datas(df, colunas_data):
     for coluna in colunas_data:
+        # TODO: TRATAR CASO SEJA UM DICIONNÁROI/LISTA COM DADOS DE DATA
+        if coluna not in df.columns:
+            print(f"Coluna {coluna} não econtrada no DataFrame.")
+            continue
+
         valor_inicial = df[coluna].dropna().iloc[0]
 
-        if isinstance(valor_inicial,(np.number)):
-            if len(str(int(valor_inicial))) <= 10:
-                print(f"Coluna '{coluna}' detectada em segundos. Convertendo para datetime...")
-                try:
+        if isinstance(valor_inicial, np.number):
+            try:
+                valor_inicial = int(valor_inicial)
+                if len(valor_inicial) <= 10:
+                    print(f"Coluna '{coluna}' detectada em segundos. Convertendo para datetime...")
                     for t in df[coluna]:
                         timetoconvert = t
                         timestampe_s = timetoconvert / 1000
@@ -89,12 +105,9 @@ def tratar_datas(df, colunas_data):
                         dt_object = datetime.fromtimestamp(timestampe_s)
                         formatted_update = dt_object.strftime("%Y-%m-%d %H:%M:%S")
                         df[coluna] = formatted_update
-                except TypeError:
-                    print("Datas já convertidas")
 
-            elif len(str(int(valor_inicial))) >= 13:
-                print(f"Coluna '{coluna} detectada em milissegundos. Convertendo para datetime...'")
-                try:
+                elif len(valor_inicial) >= 13:
+                    print(f"Coluna '{coluna} detectada em milissegundos. Convertendo para datetime...'")
                     for t in df[coluna]:
                         timetoconvert = t
                         timestampe_s = timetoconvert / 1000
@@ -102,16 +115,16 @@ def tratar_datas(df, colunas_data):
                         dt_object = datetime.fromtimestamp(timestampe_s)
                         formatted_update = dt_object.strftime("%Y-%m-%d %H:%M:%S")
                         df[coluna] = formatted_update
-                except TypeError:
-                    print("Datas já convertidas")
+            except TypeError:
+                print("Datas já convertidas")
 
         elif isinstance(valor_inicial, str):
             print(f"Coluna '{coluna} detectada como stirng. Tetntando converter para datetime...'")
-            df[coluna] = pd.to_datetime(df[coluna], errors='coerse')
+            df[coluna] = pd.to_datetime(df[coluna], errors='coerce')
         else:
             print(f"Coluna '{coluna}' tem formato desconhecido. Tentando conversão padrão...")
-            
             df[coluna] = pd.to_datetime(df[coluna], errors='coerce')
+
     return df
 
 def remover_duplicatas(df):
@@ -125,9 +138,11 @@ def remover_duplicatas(df):
 
 
 def salvar_parquet(df, api_url, caminho="data/"):
-    nome_api = api_url.split('//')[-1].split('/')[0]
+    # TODO: fazer tratamento para salvar com nome genérico ou com o próprio nome do arquivo csv
+    # salva arquivo parquet de API utilizando o nome da api após o https:// + hora de criação
+    nome = api_url.split('//')[-1].split('/')[0]
     data_hora = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-    nome_arquivo = f"{nome_api}_{data_hora}.parquet"
+    nome_arquivo = f"{nome}_{data_hora}.parquet"
     caminho_completo = os.path.join(caminho, nome_arquivo)
     df.to_parquet(caminho_completo, engine='fastparquet', index=False)
     return os.path.abspath(caminho_completo)
