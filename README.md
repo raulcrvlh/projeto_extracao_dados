@@ -4,13 +4,13 @@ Você foi contratado por uma empresa de análise de risco ambiental para criar u
 
 **API Sugerida:**
 
-* USGS Earthquake Hazards Program API (https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson)
+* USGS Earthquake Hazards Program API (https://earthquake.usgs.gov/fdsnws/event/1/)
 
     - A API oferece dados sobre terremotos em tempo real.
 
-* Visual Crossing Weather API (https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline)
+* OpenWeather API (https://openweathermap.org/api)
 
-    - Dados climáticos históricos, incluindo informações sobre eventos climáticos extremos.
+    - Dados climáticos em tempo real e históricos, incluindo informações sobre furacões, tempestades e eventos climáticos extremos.
     - Você pode usar essas duas APIs para combinar dados de diferentes tipos de desastres naturais.
 
 ### Regras de Negócio:
