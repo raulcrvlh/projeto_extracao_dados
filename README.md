@@ -26,8 +26,8 @@ Este programa foi desenvolvido para facilitar a análise dos dados de COVID-19 n
 
 1. **Clone o Repositório:**
    ```bash
-   git clone https://github.com/seuusuario/seurepositorio.git
-   cd seurepositorio
+   git clone https://github.com/raulcrvlh/projeto_extracao_dados
+
 
 2. **Instale as Dependências: Certifique-se de que você tem as bibliotecas requests e pandas instaladas. Você pode instalá-las usando:**
     ```bash
@@ -39,4 +39,9 @@ Este programa foi desenvolvido para facilitar a análise dos dados de COVID-19 n
 
 4. **Interaja com o Menu: Siga as instruções no menu interativo para consultar dados de estados e salvar os resultados.**
     
-
+## Autores
+- [Alex Mendonça](https://github.com/alexcmendonca)
+- [Breno Lima](https://github.com/BrenoLima54/)
+- [Fernando Soutto](https://github.com/FeSoutto)
+- [Raul Carvalho](https://github.com/raulcrvlh/)
+- [Thais Gonçalves](https://github.com/thais-goncalves)
