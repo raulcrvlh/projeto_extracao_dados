@@ -65,3 +65,63 @@ def salvar_dados(df: pd.DataFrame, nome_arquivo: str, formato: str):
         df.to_parquet(caminho_completo, engine="fastparquet", index=False)
     
     print(f"Dados salvos com sucesso no arquivo '{caminho_completo}'.")
+
+def menu_interativo():
+    dados = carregar_dados(api_url)
+
+    if dados is not None:
+        # Calcular taxa de mortalidade
+        dados = calcular_taxa_mortalidade(dados)
+        estados_dfs = separar_dados_por_estado(dados)
+        dados_selecionados = pd.DataFrame()
+
+        while True:
+            print("\nMenu:")
+            print("1. Consultar dados de estados")
+            print("2. Salvar dados")
+            print("3. Sair")
+            opcao = input("Escolha uma opção: ")
+
+            if opcao == '1':
+                estados_dados = consultar_estados(estados_dfs)
+                if not estados_dados.empty:
+                    dados_selecionados = pd.concat([dados_selecionados, estados_dados])
+                else:
+                    print("Nenhum dado foi selecionado.")
+
+            elif opcao == '2':
+                # Verificar se há dados selecionados para salvar
+                if dados_selecionados.empty:
+                    print("Não há dados selecionados para salvar. Tente novamente.")
+                    continue
+
+                # Perguntar o formato de salvamento
+                formato = input("Escolha o formato para salvar (csv ou parquet): ").strip().lower()
+                if formato not in ['csv', 'parquet']:
+                    print("Formato inválido. Escolha 'csv' ou 'parquet'.")
+                    continue
+
+                # Nome dos arquivos
+                nome_arquivo_filtrado = input(f"Digite o nome do arquivo de dados filtrados ({formato}): ")
+                nome_arquivo_completo = input(f"Digite o nome do arquivo completo ({formato}): ")
+
+                # Salvar arquivos
+                salvar_dados(dados_selecionados, nome_arquivo_filtrado, formato)
+                salvar_dados(dados, nome_arquivo_completo, formato)
+
+            elif opcao == '3':
+                print("Realmente deseja sair sem salvar os dados?")
+                escolha = input("Digite S[im] ou N[ão]: ").strip().lower()
+                if escolha in ["s", "sim"]:
+                    print("Saindo do programa.")
+                    break
+                elif escolha in ["n", "nao", "não"]:
+                    continue
+                else:
+                    print("Opção inválida, tente novamente.")
+
+            else:
+                print("Opção inválida. Tente novamente.")
+
+# Iniciar o menu interativo
+menu_interativo()
