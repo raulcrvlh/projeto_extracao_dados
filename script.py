@@ -52,6 +52,34 @@ def consultar_estados(estados_dfs: dict):
     
     return df_filtrado
 
+def consultar_regiao(estados_dfs: dict):
+    regioes = {
+        "norte": ["AC", "AP", "AM", "PA", "RO", "RR", "TO"],
+        "nordeste": ["AL", "BA", "CE", "MA", "PB", "PE", "PI", "RN", "SE"],
+        "centro-oeste": ["GO", "MT", "MS", "DF"],
+        "sudeste": ["ES", "MG", "RJ", "SP"],
+        "sul": ["PR", "RS", "SC"]
+    }
+    
+    print("Regiões disponíveis:")
+    for regiao in regioes.keys():
+        print(f"- {regiao}")
+
+    regiao_escolhida = input("Escolha uma região para consultar (ex: norte): ").lower().strip()
+    
+    if regiao_escolhida in regioes:
+        estados_selecionados = regioes[regiao_escolhida]
+        df_filtrado = pd.DataFrame()
+        for estado in estados_selecionados:
+            if estado in estados_dfs:
+                print(f"\nDados da região {regiao_escolhida} para o estado {estado}:")
+                print(estados_dfs[estado])
+                df_filtrado = pd.concat([df_filtrado, estados_dfs[estado]])
+        return df_filtrado
+    else:
+        print("Região não encontrada.")
+        return pd.DataFrame()
+    
 def salvar_dados(df: pd.DataFrame, nome_arquivo: str, formato: str):
     if not nome_arquivo.endswith(f".{formato}"):
         nome_arquivo += f".{formato}"
@@ -78,8 +106,9 @@ def menu_interativo():
         while True:
             print("\nMenu:")
             print("1. Consultar dados de estados")
-            print("2. Salvar dados")
-            print("3. Sair")
+            print("2. Consultar dados por região")
+            print("3. Salvar dados")
+            print("4. Sair")
             opcao = input("Escolha uma opção: ")
 
             if opcao == '1':
@@ -90,26 +119,29 @@ def menu_interativo():
                     print("Nenhum dado foi selecionado.")
 
             elif opcao == '2':
-                # Verificar se há dados selecionados para salvar
+                regiao_dados = consultar_regiao(estados_dfs)
+                if not regiao_dados.empty:
+                    dados_selecionados = pd.concat([dados_selecionados, regiao_dados])
+                else:
+                    print("Nenhum dado foi selecionado.")
+
+            elif opcao == '3':
                 if dados_selecionados.empty:
                     print("Não há dados selecionados para salvar. Tente novamente.")
                     continue
 
-                # Perguntar o formato de salvamento
                 formato = input("Escolha o formato para salvar (csv ou parquet): ").strip().lower()
                 if formato not in ['csv', 'parquet']:
                     print("Formato inválido. Escolha 'csv' ou 'parquet'.")
                     continue
 
-                # Nome dos arquivos
                 nome_arquivo_filtrado = input(f"Digite o nome do arquivo de dados filtrados ({formato}): ")
                 nome_arquivo_completo = input(f"Digite o nome do arquivo completo ({formato}): ")
 
-                # Salvar arquivos
                 salvar_dados(dados_selecionados, nome_arquivo_filtrado, formato)
                 salvar_dados(dados, nome_arquivo_completo, formato)
 
-            elif opcao == '3':
+            elif opcao == '4':
                 print("Realmente deseja sair sem salvar os dados?")
                 escolha = input("Digite S[im] ou N[ão]: ").strip().lower()
                 if escolha in ["s", "sim"]:
